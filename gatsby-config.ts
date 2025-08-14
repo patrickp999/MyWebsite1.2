@@ -1,4 +1,5 @@
-require("dotenv").config({ path: `.env.${process.env.NODE_ENV}` });
+import dotenv from "dotenv";
+dotenv.config({ path: `.env.${process.env.NODE_ENV}` });
 
 import type { GatsbyConfig } from "gatsby";
 
@@ -21,6 +22,18 @@ const config: GatsbyConfig = {
           process.env.CONTENTFUL_ACCESS_TOKEN!,
         host: process.env.CONTENTFUL_HOST || "cdn.contentful.com",
         environment: process.env.CONTENTFUL_ENVIRONMENT || "master",
+      },
+    },
+    {
+      resolve: `gatsby-plugin-manifest`,
+      options: {
+        name: `Patrick Puga | Software Engineer`,
+        short_name: `Patrick Puga`,
+        start_url: `/`,
+        background_color: `#ffffff`,
+        theme_color: `#000000`,
+        display: `standalone`,
+        icon: `src/images/favicon.png`, // Path to your favicon file
       },
     },
     "gatsby-plugin-image",
