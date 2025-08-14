@@ -2,4 +2,6 @@ node_modules/
 .cache/
 public/
 .env*
-
+gatsby-types.d.ts
+# macOS
+.DS_Store
