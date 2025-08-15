@@ -1,29 +1,27 @@
 import * as React from "react";
+import "../styles/theme.css";
+import "../styles/global.css";
+import Nav from "./Nav";
 
-type LayoutProps = {
-  children?: React.ReactNode;
-};
-
-const Layout: React.FC<LayoutProps> = ({ children }) => {
+const Layout: React.FC<React.PropsWithChildren> = ({ children }) => {
   return (
-    <div>
-      <header style={{ padding: "1rem 0" }}>
-        <div style={{ maxWidth: 960, margin: "0 auto", padding: "0 1rem" }}>
-          <strong>My Website</strong>
+    <div id="root">
+      <header className="header">
+        <div className="container">
+          {/* Sticky nav lives outside container to span full width; we render it separately */}
         </div>
       </header>
-      <main style={{ maxWidth: 960, margin: "0 auto", padding: "0 1rem" }}>
+
+      <Nav />
+
+      <main id="content" className="container main">
         {children}
       </main>
-      <footer
-        style={{
-          maxWidth: 960,
-          margin: "2rem auto",
-          padding: "0 1rem",
-          opacity: 0.7,
-        }}
-      >
-        © {new Date().getFullYear()}
+
+      <footer className="footer">
+        <div className="container">
+          <small>© {new Date().getFullYear()} Patrick Puga</small>
+        </div>
       </footer>
     </div>
   );

@@ -3,6 +3,7 @@ import * as React from "react";
 import type { PageProps, HeadFC } from "gatsby";
 import { graphql } from "gatsby";
 import { About, Contact, Hero, Layout, WorkHistory } from "../components";
+import { Seo } from "../components/seo";
 
 const IndexPage: React.FC<PageProps> = () => {
   return (
@@ -17,9 +18,7 @@ const IndexPage: React.FC<PageProps> = () => {
 
 export default IndexPage;
 
-export const Head: HeadFC = () => (
-  <title>Patrick Puga | Software Engineer</title>
-);
+export const Head = () => <Seo title="Software Engineer" />;
 
 export const pageQuery = graphql`
   query IndexPage {
