@@ -146,7 +146,7 @@
 }
 
 /* Responsive */
-@media (max-width: 900px) {
+@media (max-width: 640px) {
   .nav-links {
     display: none;
   }

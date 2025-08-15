@@ -3,34 +3,19 @@ import { Link } from "gatsby";
 import { CSSTransition, TransitionGroup } from "react-transition-group";
 
 import "../styles/components/nav.css";
-import "./Menu"; // ensure TS includes the file during build
+import "./Menu";
+import { Menu } from "./Menu";
+import {
+  DEFAULT_LINKS,
+  DELTA,
+  NAV_HEIGHT,
+  RESUME_HREF,
+} from "../utils/constants";
+import { useScrollDirection } from "../utils/useScrollDirection";
 
-// If you have a config, import it. Otherwise scaffold:
-const DEFAULT_LINKS = [
-  { url: "#about", name: "About" },
-  { url: "#work", name: "Work" },
-  { url: "#contact", name: "Contact" },
-];
-
-const NAV_HEIGHT = 72;
-const DELTA = 5;
-
-type NavProps = {
-  navLinks?: { url: string; name: string }[];
-  resumeHref?: string;
-  logoText?: string;
-};
-
-export const Nav: React.FC<NavProps> = ({
-  navLinks = DEFAULT_LINKS,
-  resumeHref = "/Resume.pdf",
-  logoText = "Patrick Puga",
-}) => {
+export const Nav: React.FC = () => {
   const [menuOpen, setMenuOpen] = React.useState(false);
-  const [scrollDirection, setScrollDirection] = React.useState<
-    "none" | "up" | "down"
-  >("none");
-  const lastTop = React.useRef(0);
+  const [mounted, setMounted] = React.useState(false);
 
   // Body blur toggling (replaces Helmet)
   React.useEffect(() => {
@@ -39,48 +24,18 @@ export const Nav: React.FC<NavProps> = ({
     return () => document.body.classList.remove("blur");
   }, [menuOpen]);
 
-  const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => {
     const t = setTimeout(() => setMounted(true), 50); // small delay to avoid FOUC
     return () => clearTimeout(t);
   }, []);
 
-  // Scroll behavior
-  React.useEffect(() => {
-    const onScroll = () => {
-      if (window.innerWidth <= 900) return;
-
-      const fromTop = window.scrollY;
-      if (Math.abs(lastTop.current - fromTop) <= DELTA || menuOpen) return;
-
-      if (fromTop < DELTA) {
-        setScrollDirection("none");
-      } else if (fromTop > lastTop.current && fromTop > NAV_HEIGHT) {
-        if (scrollDirection !== "down") setScrollDirection("down");
-      } else if (fromTop + window.innerHeight < document.body.scrollHeight) {
-        if (scrollDirection !== "up") setScrollDirection("up");
-      }
-      lastTop.current = fromTop;
-    };
-
-    const onKey = (e: KeyboardEvent) => {
-      if (menuOpen && (e.key === "Escape" || e.key === "Esc"))
-        setMenuOpen(false);
-    };
-
-    const onResize = () => {
-      if (window.innerWidth > 900 && menuOpen) setMenuOpen(false);
-    };
-
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("keydown", onKey);
-    window.addEventListener("resize", onResize);
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("keydown", onKey);
-      window.removeEventListener("resize", onResize);
-    };
-  }, [menuOpen, scrollDirection]);
+  // ⬇️ NEW: scroll direction from the hook
+  const { scrollDirection } = useScrollDirection({
+    delta: DELTA,
+    navHeight: NAV_HEIGHT,
+    disabled: menuOpen, // don’t change header while menu is open
+    mobileCutoff: 640, // (optional) align with your phone breakpoint
+  });
 
   const headerClasses = [
     "nav-header",
@@ -88,6 +43,23 @@ export const Nav: React.FC<NavProps> = ({
     scrollDirection === "down" ? "hide" : "",
     scrollDirection === "up" ? "shadow" : "",
   ].join(" ");
+
+  React.useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (menuOpen && (e.key === "Escape" || e.key === "Esc"))
+        setMenuOpen(false);
+    };
+    const onResize = () => {
+      if (window.innerWidth > 640 && menuOpen) setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("resize", onResize);
+    };
+  }, [menuOpen]);
+
   return (
     <>
       <header className={headerClasses} role="banner">
@@ -101,7 +73,7 @@ export const Nav: React.FC<NavProps> = ({
                     {mounted &&
                       [
                         // 1) normal links first…
-                        ...navLinks.map(({ url, name }) => ({
+                        ...DEFAULT_LINKS.map(({ url, name }) => ({
                           kind: "link" as const,
                           url,
                           name,
@@ -132,7 +104,7 @@ export const Nav: React.FC<NavProps> = ({
                             ) : (
                               <a
                                 className="resume-link"
-                                href={resumeHref}
+                                href={RESUME_HREF}
                                 target="_blank"
                                 rel="nofollow noopener noreferrer"
                                 // (no extra delay here — it already uses i * 300ms)
@@ -181,14 +153,11 @@ export const Nav: React.FC<NavProps> = ({
       <Menu
         open={menuOpen}
         onClose={() => setMenuOpen(false)}
-        links={navLinks}
-        resumeHref={resumeHref}
+        links={DEFAULT_LINKS}
+        resumeHref={RESUME_HREF}
       />
     </>
   );
 };
 
 export default Nav;
-
-// Local import to avoid circular default export issues
-import { Menu } from "./Menu";
