@@ -2,10 +2,12 @@ import * as React from "react";
 import { Link } from "gatsby";
 import "../styles/components/menu.css";
 
+type LinkItem = { readonly url: string; readonly name: string };
+
 type Props = {
   open: boolean;
   onClose: () => void;
-  links: { url: string; name: string }[];
+  links: ReadonlyArray<LinkItem>;
   resumeHref: string;
 };
 

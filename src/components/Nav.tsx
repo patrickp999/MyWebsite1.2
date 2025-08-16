@@ -8,6 +8,9 @@ import { Menu } from "./Menu";
 import {
   DEFAULT_LINKS,
   DELTA,
+  FADE_DURATION,
+  HAMBURGER_DELAY_MS,
+  LINK_STAGGER_MS,
   NAV_HEIGHT,
   RESUME_HREF,
 } from "../utils/constants";
@@ -16,18 +19,6 @@ import { useScrollDirection } from "../utils/useScrollDirection";
 export const Nav: React.FC = () => {
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [mounted, setMounted] = React.useState(false);
-
-  // Body blur toggling (replaces Helmet)
-  React.useEffect(() => {
-    if (menuOpen) document.body.classList.add("blur");
-    else document.body.classList.remove("blur");
-    return () => document.body.classList.remove("blur");
-  }, [menuOpen]);
-
-  React.useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 50); // small delay to avoid FOUC
-    return () => clearTimeout(t);
-  }, []);
 
   // ⬇️ NEW: scroll direction from the hook
   const { scrollDirection } = useScrollDirection({
@@ -43,6 +34,22 @@ export const Nav: React.FC = () => {
     scrollDirection === "down" ? "hide" : "",
     scrollDirection === "up" ? "shadow" : "",
   ].join(" ");
+
+  const handleMenuToggle = () => {
+    setMenuOpen((prev) => !prev);
+  };
+
+  // Body blur toggling (replaces Helmet)
+  React.useEffect(() => {
+    if (menuOpen) document.body.classList.add("blur");
+    else document.body.classList.remove("blur");
+    return () => document.body.classList.remove("blur");
+  }, [menuOpen]);
+
+  React.useEffect(() => {
+    const t = setTimeout(() => setMounted(true), 50); // small delay to avoid FOUC
+    return () => clearTimeout(t);
+  }, []);
 
   React.useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -84,12 +91,18 @@ export const Nav: React.FC = () => {
                         <CSSTransition
                           key={item.kind === "link" ? item.name : "resume"}
                           classNames="fadelink"
-                          timeout={{ appear: 1200, enter: 1200, exit: 300 }}
+                          timeout={{
+                            appear: FADE_DURATION.appear,
+                            enter: FADE_DURATION.enter,
+                            exit: FADE_DURATION.exit,
+                          }}
                           appear
                         >
                           <li
                             className="nav-item"
-                            style={{ transitionDelay: `${i * 300}ms` }} // resume gets the last delay
+                            style={{
+                              transitionDelay: `${i * LINK_STAGGER_MS}ms`,
+                            }} // resume gets the last delay
                           >
                             {item.kind === "link" ? (
                               item.url.startsWith("#") ? (
@@ -131,11 +144,11 @@ export const Nav: React.FC = () => {
                     <button
                       className="hamburger"
                       style={{
-                        transitionDelay: "300ms",
+                        transitionDelay: `${HAMBURGER_DELAY_MS}ms`,
                       }}
                       aria-label="Toggle menu"
                       aria-expanded={menuOpen}
-                      onClick={() => setMenuOpen((v) => !v)}
+                      onClick={handleMenuToggle}
                     >
                       <span className="hamburger-box">
                         <span className="hamburger-inner" />
